@@ -112,3 +112,95 @@ func TestEvalBooleanExpression(t *testing.T) {
 		})
 	}
 }
+
+func TestIfElseExpression(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  interface{}
+	}{
+		{name: "test1", input: "if (true) { 10 }", want: 10},
+		{name: "test2", input: "if (false) { 10 }", want: nil},
+		{name: "test3", input: "if (1) { 10 }", want: 10},
+		{name: "test4", input: "if (1 < 2) { 10 }", want: 10},
+		{name: "test5", input: "if (1 > 2) { 10 }", want: nil},
+		{name: "test6", input: "if (1 > 2) { 10 } else { 20 }", want: 20},
+		{name: "test7", input: "if (1 < 2) { 10 } else { 20 }", want: 10},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.want.(int)
+
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			testNullObject(t, evaluated)
+		}
+	}
+}
+
+func testNullObject(t *testing.T, obj object.Object) {
+	if obj != NULL {
+		t.Errorf("object is not NULL. got=%T (%+v)", obj, obj)
+	}
+}
+
+func testIntegerObject(t *testing.T, obj object.Object, want int64) {
+	result, ok := obj.(*object.Integer)
+	if !ok {
+		t.Errorf("object is not Integer. got=%T (%+v)", obj, obj)
+		return
+	}
+	if result.Value != want {
+		t.Errorf("object has wrong value. got=%d, want=%d", result.Value, want)
+	}
+}
+
+func TestReturnStatement(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  int64
+	}{
+		{name: "test1", input: "return 10;", want: 10},
+		{name: "test2", input: "return 10; 9;", want: 10},
+		{name: "test3", input: "return 2*5; 9;", want: 10},
+		{name: "test4", input: "9; return 2*5; 9;", want: 10},
+		{name: "test5", input: "if (10 > 1) { if (10 > 1) { return 10; } return 1; }", want: 10},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		testIntegerObject(t, evaluated, tt.want)
+	}
+}
+
+func TestErrorHanding(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       string
+		wantMessage string
+	}{
+		{name: "test1", input: "5 + true;", wantMessage: "type mismatch: INTEGER + BOOLEAN"},
+		{name: "test2", input: "5 + true; 5;", wantMessage: "type mismatch: INTEGER + BOOLEAN"},
+		{name: "test3", input: "-true", wantMessage: "unknown operator: -BOOLEAN"},
+		{name: "test4", input: "true + false;", wantMessage: "unknown operator: BOOLEAN + BOOLEAN"},
+		{name: "test5", input: "5; true + false; 5", wantMessage: "unknown operator: BOOLEAN + BOOLEAN"},
+		{name: "test6", input: "if (10 > 1) { true + false; }", wantMessage: "unknown operator: BOOLEAN + BOOLEAN"},
+		{name: "test7", input: "if (10 > 1) { if (10 > 1) { return true + false; } return 1; }", wantMessage: "unknown operator: BOOLEAN + BOOLEAN"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		errObj, ok := evaluated.(*object.Error)
+		if !ok {
+			t.Errorf("%s: no error object returned. got=%T(%+v)", tt.name, evaluated, evaluated)
+			continue
+		}
+		if errObj.Message != tt.wantMessage {
+			t.Errorf("wrong error message. want=%q, got=%q", tt.wantMessage, errObj.Message)
+		}
+	}
+
+}
