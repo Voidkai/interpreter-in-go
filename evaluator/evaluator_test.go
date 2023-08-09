@@ -27,8 +27,9 @@ func testEval(input string) object.Object {
 	p := parser.New(l)
 
 	program := p.ParseProgram()
+	env := object.NewEnvironment()
 
-	return Eval(program)
+	return Eval(program, env)
 }
 
 func TestEvalIntegerExpression(t *testing.T) {
@@ -203,4 +204,22 @@ func TestErrorHanding(t *testing.T) {
 		}
 	}
 
+}
+
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected int64
+	}{
+		{name: "test1", input: "let a = 5; a;", expected: 5},
+		{name: "test2", input: "let a = 5 * 5; a;", expected: 25},
+		{name: "test3", input: "let a = 5; let b = a; b;", expected: 5},
+		{name: "test4", input: "let a = 5; let b = a; let c = a + b + 5; c;", expected: 15},
+		{name: "test4", input: "let a = 5; let b = a; let c = a + b + 5; c;", expected: 15},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
 }
