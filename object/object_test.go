@@ -221,7 +221,7 @@ func TestFunction_Type(t *testing.T) {
 				},
 				Env: &Environment{},
 			},
-			want: "RETURN_VALUE",
+			want: "FUNCTION",
 		},
 	}
 	for _, tt := range tests {

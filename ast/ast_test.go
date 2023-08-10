@@ -75,3 +75,39 @@ func TestProgram_String(t *testing.T) {
 		})
 	}
 }
+
+func TestStringLiteral_TokenLiteral(t *testing.T) {
+	type fields struct {
+		Token token.Token
+		Value string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		// TODO: Add test cases.
+		{
+			name: "test1",
+			fields: fields{
+				Token: token.Token{
+					Type:    token.STRING,
+					Literal: "hello",
+				},
+				Value: "hello",
+			},
+			want: "hello",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sl := &StringLiteral{
+				Token: tt.fields.Token,
+				Value: tt.fields.Value,
+			}
+			if got := sl.TokenLiteral(); got != tt.want {
+				t.Errorf("TokenLiteral() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -32,30 +32,6 @@ func testEval(input string) object.Object {
 	return Eval(program, env)
 }
 
-func TestEvalIntegerExpression(t *testing.T) {
-	type args struct {
-		input string
-	}
-	tests := []struct {
-		name string
-		args args
-		want object.Object
-	}{
-		{name: "test1", args: args{input: "5"}, want: &object.Integer{Value: 5}},
-		{name: "test2", args: args{input: "10"}, want: &object.Integer{Value: 10}},
-		{name: "test3", args: args{input: "true"}, want: &object.Boolean{Value: true}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			//if got := Eval(tt.args.node); !reflect.DeepEqual(got, tt.want) {
-			//	t.Errorf("Eval() = %v, want %v", got, tt.want)
-			//}
-			evaluated := testEval(tt.args.input)
-			testObject(t, evaluated, tt.want)
-		})
-	}
-}
-
 func TestBangOperator(t *testing.T) {
 	type args struct {
 		input string
@@ -79,7 +55,7 @@ func TestBangOperator(t *testing.T) {
 	}
 }
 
-func TestEvalBooleanExpression(t *testing.T) {
+func TestEvalExpression(t *testing.T) {
 	type args struct {
 		input string
 	}
@@ -88,23 +64,26 @@ func TestEvalBooleanExpression(t *testing.T) {
 		args args
 		want object.Object
 	}{
-		{name: "test1", args: args{input: "true"}, want: &object.Boolean{Value: true}},
-		{name: "test2", args: args{input: "false"}, want: &object.Boolean{Value: false}},
-		{name: "test3", args: args{input: "1 < 2"}, want: &object.Boolean{Value: true}},
-		{name: "test4", args: args{input: "1 > 2"}, want: &object.Boolean{Value: false}},
-		{name: "test5", args: args{input: "1 == 2"}, want: &object.Boolean{Value: false}},
-		{name: "test6", args: args{input: "1 != 2"}, want: &object.Boolean{Value: true}},
-		{name: "test7", args: args{input: "true == true"}, want: &object.Boolean{Value: true}},
-		{name: "test8", args: args{input: "true != true"}, want: &object.Boolean{Value: false}},
-		{name: "test9", args: args{input: "false == false"}, want: &object.Boolean{Value: true}},
-		{name: "test10", args: args{input: "false != false"}, want: &object.Boolean{Value: false}},
-		{name: "test11", args: args{input: "true == false"}, want: &object.Boolean{Value: false}},
-		{name: "test12", args: args{input: "true != false"}, want: &object.Boolean{Value: true}},
-		{name: "test13", args: args{input: "false == true"}, want: &object.Boolean{Value: false}},
-		{name: "test14", args: args{input: "false != true"}, want: &object.Boolean{Value: true}},
-		{name: "test15", args: args{input: "(1 < 2) == true"}, want: &object.Boolean{Value: true}},
-		{name: "test16", args: args{input: "(1 < 2) == false"}, want: &object.Boolean{Value: false}},
-		{name: "test17", args: args{input: "(1+2)*3 == 9"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test1", args: args{input: "true"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test2", args: args{input: "false"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test3", args: args{input: "1 < 2"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test4", args: args{input: "1 > 2"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test5", args: args{input: "1 == 2"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test6", args: args{input: "1 != 2"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test7", args: args{input: "true == true"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test8", args: args{input: "true != true"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test9", args: args{input: "false == false"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test10", args: args{input: "false != false"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test11", args: args{input: "true == false"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test12", args: args{input: "true != false"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test13", args: args{input: "false == true"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test14", args: args{input: "false != true"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test15", args: args{input: "(1 < 2) == true"}, want: &object.Boolean{Value: true}},
+		{name: "Boolean_test16", args: args{input: "(1 < 2) == false"}, want: &object.Boolean{Value: false}},
+		{name: "Boolean_test17", args: args{input: "(1+2)*3 == 9"}, want: &object.Boolean{Value: false}},
+		{name: "Integer_test1", args: args{input: "5"}, want: &object.Integer{Value: 5}},
+		{name: "Integer_test2", args: args{input: "10"}, want: &object.Integer{Value: 10}},
+		{name: "Integer_test3", args: args{input: "true"}, want: &object.Boolean{Value: true}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -222,4 +201,85 @@ func TestLetStatements(t *testing.T) {
 	for _, tt := range tests {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
 	}
+}
+
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T(%+v)", evaluated, evaluated)
+	}
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
+
+}
+
+func TestStringInfixExpression(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{name: "test1", input: `"Hello" + " " + "World!"`, expected: "Hello World!"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		str, ok := evaluated.(*object.String)
+		if !ok {
+			t.Fatalf("object is not String. got=%T(%+v)", evaluated, evaluated)
+		}
+		if str.Value != tt.expected {
+			t.Errorf("String has wrong value. got=%q", str.Value)
+		}
+	}
+}
+
+func TestBuiltinFunction(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected interface{}
+	}{
+		{name: "test1", input: `len("")`, expected: 0},
+		{name: "test2", input: `len("four")`, expected: 4},
+		{name: "test3", input: `len("hello world")`, expected: 11},
+		{name: "test4", input: `len(1)`, expected: "argument to `len` not supported, got INTEGER"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(expected))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Fatalf("object is not Error. got=%T(%+v)", evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("wrong error message. want=%q, got=%q", expected, errObj.Message)
+			}
+		}
+	}
+}
+
+func TestArrayLiterals(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+	evaluated := testEval(input)
+	result, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("object is not Array. got=%T(%+v)", evaluated, evaluated)
+	}
+	if len(result.Elements) != 3 {
+		t.Fatalf("array has wrong num of elements. got=%d", len(result.Elements))
+	}
+	testIntegerObject(t, result.Elements[0], 1)
+	testIntegerObject(t, result.Elements[1], 4)
+	testIntegerObject(t, result.Elements[2], 6)
+
 }
