@@ -53,4 +53,14 @@ var builtins = map[string]*object.BuiltIn{
 			return newError("empty array")
 		},
 	},
+	"puts": &object.BuiltIn{
+		Fn: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				println(arg.Inspect())
+			}
+			return &object.String{
+				Value: "-------",
+			}
+		},
+	},
 }

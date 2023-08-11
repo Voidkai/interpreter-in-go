@@ -283,3 +283,59 @@ func TestArrayLiterals(t *testing.T) {
 	testIntegerObject(t, result.Elements[2], 6)
 
 }
+
+func TestHashLiterals(t *testing.T) {
+	input := `
+	{
+		"one": 10 - 9,
+		"two": 1 + 1,
+		"thr" + "ee": 6 / 2
+}`
+	evaluated := testEval(input)
+	hash, ok := evaluated.(*object.Hash)
+	if !ok {
+		t.Fatalf("Eval didn't return Hash. got=%T(%+v)", evaluated, evaluated)
+	}
+	expected := map[object.HashKey]object.Object{
+		(&object.String{Value: "one"}).HashKey():   &object.Integer{Value: 1},
+		(&object.String{Value: "two"}).HashKey():   &object.Integer{Value: 2},
+		(&object.String{Value: "three"}).HashKey(): &object.Integer{Value: 3},
+	}
+	if len(hash.Pairs) != len(expected) {
+		t.Fatalf("Hash has wrong num of pairs. got=%d， excepted = %d", len(hash.Pairs), len(expected))
+	}
+	for expectedKey, expectedValue := range expected {
+		pair, ok := hash.Pairs[expectedKey]
+		if !ok {
+			t.Errorf("no pair for given key in Pairs")
+		}
+		testIntegerObject(t, pair.Value, expectedValue.(*object.Integer).Value)
+	}
+}
+
+func TestHashIndexExpression(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected interface{}
+	}{
+		{name: "test1", input: `{"foo": 5}["foo"]`, expected: 5},
+		{name: "test2", input: `{"foo": 5}["bar"]`, expected: nil},
+		{name: "test3", input: `let key = "foo"; {"foo": 5}[key]`, expected: 5},
+		{name: "test4", input: `{}["foo"]`, expected: nil},
+		{name: "test5", input: `{5: 5}[5]`, expected: 5},
+		{name: "test6", input: `{true: 5}[true]`, expected: 5},
+		{name: "test7", input: `{false: 5}[false]`, expected: 5},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			testNullObject(t, evaluated)
+		}
+	}
+}

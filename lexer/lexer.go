@@ -85,6 +85,8 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.New(token.SEMICOLON, l.ch)
 	case '-':
 		tok = token.New(token.MINUS, l.ch)
+	case ':':
+		tok = token.New(token.COLON, l.ch)
 	case '!':
 		if l.peekChar() == '=' {
 			ch := l.ch

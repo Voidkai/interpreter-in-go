@@ -34,7 +34,7 @@ func TestNextTokenSimpleInput(t *testing.T) {
 }
 
 func TestNextTokenRealInput(t *testing.T) {
-	buf, _ := ioutil.ReadFile("monkey.txt")
+	buf, _ := ioutil.ReadFile("../monkey.txt")
 	input := string(buf)
 
 	tests := []struct {
@@ -122,6 +122,11 @@ func TestNextTokenRealInput(t *testing.T) {
 		{token.INT, "2"},
 		{token.RBRACKET, "]"},
 		{token.SEMICOLON, ";"},
+		{token.LBRACE, "{"},
+		{token.STRING, "foo"},
+		{token.COLON, ":"},
+		{token.STRING, "bar"},
+		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}
 
